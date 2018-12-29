@@ -118,8 +118,23 @@ class LoginMidddleware(object):
 
 #使用现有cookie信息
 class CookieMiddle(object):
-    def process_request(self,request,spider):
-        return Request(request.url,callback=)
+
+    def process_request(self, request, spider):
+        request.cookies = cookie.get_cookies()
+        if request.url.startswith('https://'):
+            proxy_ = proxy.random_https_proxy()
+        else:
+            proxy_ = proxy.random_http_proxy()
+        request.meta['proxy'] = proxy_
+        request.headers['User-Agent'] = user_agents.random_ua()
+
+
+    def process_response(self, request, response,spider):
+        print('---响应---', response.status, request.url)
+        if response.status == 403:
+            request.cookies = cookie.get_cookies()
+            return request
+        return response
 
 
 class DzpDownloaderMiddleware(object):
